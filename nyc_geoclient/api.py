@@ -53,8 +53,8 @@ class Geoclient(object):
         for k in kwargs.keys():
             if kwargs[k] is None:
                 kwargs.pop(k)
-
-        return requests.get(u'{0}{1}.json?{2}'.format(Geoclient.BASE_URL, endpoint, urlencode(kwargs))).json()[endpoint]
+        key = 'results' if endpoint == "search" else endpoint
+        return requests.get(u'{0}{1}.json?{2}'.format(Geoclient.BASE_URL, endpoint, urlencode(kwargs))).json()[key]
 
     def address(self, houseNumber, street, borough):
         """
@@ -200,3 +200,56 @@ class Geoclient(object):
         :returns: A dict with place-level information.
         """
         return self._request(u'place', name=name, borough=borough)
+
+    def search(self,
+                    input,
+                    exactMatchForSingleSuccess=None,
+                    exactMatchMaxLevel=None,
+                    returnPolicy=None,
+                    returnPossiblesWithExact=None,
+                    returnRejections=None,
+                    returnTokens=None,
+                    similarNamesDistance=None):
+        """
+        Begining with version 1.10, any of the six request types documented in section 1.2
+        can be accessed using a single unparsed location string.
+        Assuming that the Geoclient parser can guess the location type requested
+        and the given single-field input parameter contains contains enough information
+        to generate a successful Geosupport call, the service will return one
+        or more sets of geocodes corresponding to the type of request that was made.
+
+        :param input:
+            Unparsed location input.
+        :param exactMatchForSingleSuccess:
+            (optional) Whether a search returning only one possible successfully geocoded
+            location is considered an exact match. Defaults to false.
+        :param exactMatchMaxLevel:
+            (optional) The maximum number of sub-search levels to perform if Geosupport
+            rejects the input but suggests alternative street names, etc.
+            Defaults to 3. Maximum is allowable value is 6.
+        :param returnPolicy:
+            (optional) Whether to return information on the search policy used to perform the search.
+            Defaults to false.
+        :param returnPossiblesWithExact:
+            (optional) Whether to also return successfully geocoded possible matches
+            when available in addition to the exact match. Defaults to false.
+        :param returnRejections:
+            (optional) Whether to return rejected response data from Geosupport. Defaults to false.
+        :param returnTokens:
+            (optional) Whether to return the parsed input tokens recognized by the parser. Defaults to false.
+        :param similarNamesDistance:
+            (optional) Maximum allowable Levenshtein distance between user input
+            and a similar name suggestion from Geosupport. Defaults to 8.
+            A higher number will allow more "guesses" to be made about an unrecognized street name.
+
+        :returns: List of geocodes corresponding to the type of request that was made.
+        """
+        return self._request(u'search',
+                    input=input,
+                    exactMatchForSingleSuccess=exactMatchForSingleSuccess,
+                    exactMatchMaxLevel=exactMatchMaxLevel,
+                    returnPolicy=returnPolicy,
+                    returnPossiblesWithExact=returnPossiblesWithExact,
+                    returnRejections=returnRejections,
+                    returnTokens=returnTokens,
+                    similarNamesDistance=similarNamesDistance)
